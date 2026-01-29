@@ -506,7 +506,7 @@ const contactForm = {
             this.showToast('success', 'Message Sent!', 'We\'ll get back to you within 24 hours.');
         }, 2000);
     },
-    
+     
    // ==================== CONTACT FORM (UPDATED) ====================
     /*
 const contactForm = {
