@@ -1,77 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Character & Viewport -->
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Crevate Technologies - We Build Digital Solutions That Grow Your Business. Websites, Mobile Apps & Smart Digital Solutions for startups and businesses.">
-    <meta name="keywords" content="web development, mobile apps, digital solutions, startup, technology, website design">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <!-- Primary SEO Meta Tags -->
+    <title>Crevate Technologies | Best IT & Software Development Company</title>
+    <meta name="title" content="Crevate Technologies | Best IT & Software Development Company">
+    <meta name="description" content="Crevate Technologies: Expert IT solutions including web development, mobile apps, digital marketing, and software solutions for startups and businesses worldwide.">
+    <meta name="keywords" content="IT company, web development, software development, mobile apps, startup solutions, digital marketing, business growth, Crevate Technologies">
     <meta name="author" content="Crevate Technologies">
-    
-    <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="Crevate Technologies - Digital Solutions">
-    <meta property="og:description" content="We Build Digital Solutions That Grow Your Business">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    <meta name="revisit-after" content="3 days">
+    <meta name="theme-color" content="#4F46E5">
+
+    <!-- Open Graph / Facebook Meta Tags -->
+    <meta property="og:title" content="Crevate Technologies | Best IT & Software Development Company">
+    <meta property="og:description" content="Expert IT solutions: web development, mobile apps, digital marketing, and software solutions for startups and businesses worldwide.">
+    <meta property="og:image" content="https://crevatetechnologies.com/logo.png"> <!-- replace with your hosted logo -->
+    <meta property="og:url" content="https://crevatetechnologies.com">
     <meta property="og:type" content="website">
-    
-    <title>Crevate Technologies | Digital Solutions That Grow Your Business</title>
-    
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Crevate Technologies | Best IT & Software Development Company">
+    <meta name="twitter:description" content="Expert IT solutions: web development, mobile apps, digital marketing, and software solutions for startups and businesses worldwide.">
+    <meta name="twitter:image" content="https://crevatetechnologies.com/logo.png">
+
+    <!-- Favicon / Logo -->
+    <link rel="icon" type="image/png" href="logo.png"> <!-- replace with your logo -->
+    <link rel="shortcut icon" href="logo.png" type="image/png">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <!-- adding a  external js link-->
-     
 
-    
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="poppup.css">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    <meta name="theme-color" content="#4F46E5">
+
+    <!-- Optional: Service Worker Registration (PWA) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(reg => {
+                    console.log('Service Worker registered for PWA', reg);
+                }).catch(err => {
+                    console.log('Service Worker registration failed', err);
+                });
+            });
+        }
+    </script>
 </head>
 <body>
-    <!-- Preloader -->
-    <div id="preloader">
-        <div class="loader">
-            <div class="loader-inner"></div>
-            <span>Crevate</span>
-        </div>
-    </div>
-
-    <!-- Header / Navigation -->
-    <header id="header">
-        <nav class="navbar">
-            <div class="nav-container">
-                <a href="#home" class="logo">
-                    <span class="logo-icon">
-                        <i class="fas fa-code"></i>
-                    </span>
-                    <span class="logo-text">Crevate<span class="logo-highlight">Technologies</span></span>
-                </a>
-                
-                <ul class="nav-menu" id="navMenu">
-                    <li><a href="#home" class="nav-link active">Home</a></li>
-                    <li><a href="#services" class="nav-link">Services</a></li>
-                    <li><a href="#portfolio" class="nav-link">Portfolio</a></li>
-                    <li><a href="#updates" class="nav-link">Updates</a></li>
-                    <li><a href="#about" class="nav-link">About Us</a></li>
-                    <li><a href="#contact" class="nav-link">Contact</a></li>
-                </ul>
-                
-                <div class="nav-actions">
-                    <a href="#contact" class="btn btn-primary nav-cta">Get Started</a>
-                    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Menu">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
-                </div>
-            </div>
-        </nav>
-    </header>
 
     <!-- Hero Section -->
     <section id="home" class="hero">
