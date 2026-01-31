@@ -1,0 +1,10 @@
+# robots.txt for Crevate Technologies
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://crevatetechnologies.com/sitemap.xml
+
+# Disallow admin areas (if any)
+Disallow: /admin/
+Disallow: /private/

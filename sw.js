@@ -1,177 +1,164 @@
 /**
- * CREVATE TECHNOLOGIES - Service Worker
- * Version: 2.0.0
+ * Crevate Technologies - Service Worker
+ * Enables PWA functionality with offline support
  */
 
-const CACHE_NAME = 'crevate-cache-v2';
+const CACHE_NAME = 'crevate-v1.0.0';
 const OFFLINE_URL = '/offline.html';
 
-// Assets to cache on install
-const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/poppup.css',
-  '/main.js',
-  '/poppup.js',
-  '/handlers.js',
-  '/logo.png',
-  '/manifest.json',
-  OFFLINE_URL,
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-  'https://unpkg.com/aos@2.3.1/dist/aos.css',
-  'https://unpkg.com/aos@2.3.1/dist/aos.js'
+// Files to cache
+const STATIC_ASSETS = [
+    '/',
+    '/index.html',
+    '/about.html',
+    '/services.html',
+    '/portfolio.html',
+    '/contact.html',
+    '/offline.html',
+    '/css/style.css',
+    '/css/components.css',
+    '/css/responsive.css',
+    '/js/main.js',
+    '/js/components.js',
+    '/logo.png',
+    '/manifest.json'
 ];
 
-// Install event - cache assets
+// Install event - cache static assets
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing Service Worker...');
-  
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[SW] Caching app shell and content');
-        return cache.addAll(PRECACHE_ASSETS);
-      })
-      .then(() => {
-        console.log('[SW] Skip waiting on install');
-        return self.skipWaiting();
-      })
-      .catch((error) => {
-        console.error('[SW] Cache failed:', error);
-      })
-  );
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then((cache) => {
+                console.log('Caching static assets');
+                return cache.addAll(STATIC_ASSETS);
+            })
+            .then(() => {
+                return self.skipWaiting();
+            })
+            .catch((error) => {
+                console.error('Failed to cache:', error);
+            })
+    );
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating Service Worker...');
-  
-  event.waitUntil(
-    caches.keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames
-            .filter((cacheName) => cacheName !== CACHE_NAME)
-            .map((cacheName) => {
-              console.log('[SW] Removing old cache:', cacheName);
-              return caches.delete(cacheName);
+    event.waitUntil(
+        caches.keys()
+            .then((cacheNames) => {
+                return Promise.all(
+                    cacheNames
+                        .filter((name) => name !== CACHE_NAME)
+                        .map((name) => {
+                            console.log('Deleting old cache:', name);
+                            return caches.delete(name);
+                        })
+                );
             })
-        );
-      })
-      .then(() => {
-        console.log('[SW] Claiming clients');
-        return self.clients.claim();
-      })
-  );
+            .then(() => {
+                return self.clients.claim();
+            })
+    );
 });
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
-  // Skip cross-origin requests
-  if (!event.request.url.startsWith(self.location.origin) && 
-      !event.request.url.includes('fonts.googleapis.com') &&
-      !event.request.url.includes('cdnjs.cloudflare.com') &&
-      !event.request.url.includes('unpkg.com')) {
-    return;
-  }
+    // Skip non-GET requests
+    if (event.request.method !== 'GET') {
+        return;
+    }
 
-  // Handle navigation requests
-  if (event.request.mode === 'navigate') {
+    // Skip external requests
+    if (!event.request.url.startsWith(self.location.origin)) {
+        return;
+    }
+
     event.respondWith(
-      fetch(event.request)
-        .catch(() => {
-          return caches.match(OFFLINE_URL);
-        })
+        caches.match(event.request)
+            .then((cachedResponse) => {
+                if (cachedResponse) {
+                    // Return cached version
+                    return cachedResponse;
+                }
+
+                // Try network
+                return fetch(event.request)
+                    .then((networkResponse) => {
+                        // Check if valid response
+                        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+                            return networkResponse;
+                        }
+
+                        // Clone and cache the response
+                        const responseToCache = networkResponse.clone();
+                        caches.open(CACHE_NAME)
+                            .then((cache) => {
+                                cache.put(event.request, responseToCache);
+                            });
+
+                        return networkResponse;
+                    })
+                    .catch(() => {
+                        // Network failed, try to serve offline page for navigation requests
+                        if (event.request.mode === 'navigate') {
+                            return caches.match(OFFLINE_URL);
+                        }
+                        return null;
+                    });
+            })
     );
-    return;
-  }
-
-  // Stale-while-revalidate strategy for other requests
-  event.respondWith(
-    caches.match(event.request)
-      .then((cachedResponse) => {
-        const fetchPromise = fetch(event.request)
-          .then((networkResponse) => {
-            // Update cache with new response
-            if (networkResponse && networkResponse.status === 200) {
-              const responseToCache = networkResponse.clone();
-              caches.open(CACHE_NAME)
-                .then((cache) => {
-                  cache.put(event.request, responseToCache);
-                });
-            }
-            return networkResponse;
-          })
-          .catch(() => {
-            // Return offline page for HTML requests
-            if (event.request.headers.get('accept').includes('text/html')) {
-              return caches.match(OFFLINE_URL);
-            }
-          });
-
-        // Return cached response immediately, update cache in background
-        return cachedResponse || fetchPromise;
-      })
-  );
 });
 
-// Background sync for form submissions
+// Background sync for form submissions (optional)
 self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-forms') {
-    event.waitUntil(syncForms());
-  }
+    if (event.tag === 'contact-form-sync') {
+        event.waitUntil(syncContactForm());
+    }
 });
 
-async function syncForms() {
-  // Get pending form submissions from IndexedDB
-  // Send them to the server
-  console.log('[SW] Syncing forms...');
+async function syncContactForm() {
+    // Handle offline form submissions when back online
+    const db = await openDB();
+    const pendingForms = await db.getAll('pending-forms');
+    
+    for (const form of pendingForms) {
+        try {
+            await fetch('/api/contact', {
+                method: 'POST',
+                body: JSON.stringify(form.data),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            await db.delete('pending-forms', form.id);
+        } catch (error) {
+            console.error('Failed to sync form:', error);
+        }
+    }
 }
 
-// Push notifications
+// Push notification support (optional)
 self.addEventListener('push', (event) => {
-  if (!event.data) return;
+    if (!event.data) return;
 
-  const data = event.data.json();
-  const options = {
-    body: data.body,
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/badge-72x72.png',
-    vibrate: [100, 50, 100],
-    data: {
-      url: data.url || '/'
-    },
-    actions: [
-      { action: 'open', title: 'Open' },
-      { action: 'close', title: 'Close' }
-    ]
-  };
+    const data = event.data.json();
+    const options = {
+        body: data.body || 'New update from Crevate Technologies',
+        icon: '/logo.png',
+        badge: '/logo.png',
+        vibrate: [100, 50, 100],
+        data: {
+            url: data.url || '/'
+        }
+    };
 
-  event.waitUntil(
-    self.registration.showNotification(data.title, options)
-  );
+    event.waitUntil(
+        self.registration.showNotification(data.title || 'Crevate Technologies', options)
+    );
 });
 
 // Notification click handler
 self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-
-  if (event.action === 'open' || !event.action) {
+    event.notification.close();
     event.waitUntil(
-      clients.openWindow(event.notification.data.url)
+        clients.openWindow(event.notification.data.url)
     );
-  }
-});
-
-// Message handler for cache updates
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-  
-  if (event.data && event.data.type === 'CLEAR_CACHE') {
-    caches.delete(CACHE_NAME);
-  }
 });

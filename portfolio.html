@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore our portfolio of successful projects - websites, mobile apps, e-commerce solutions, and more.">
+    <title>Our Portfolio | Crevate Technologies</title>
+    
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+   
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="index.html" class="logo">
+                    <img src="logo.png" alt="Crevate Technologies" class="logo-img">
+                    <span class="logo-text">Crevate<span class="logo-highlight">Technologies</span></span>
+                </a>
+                
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="about.html" class="nav-link">About</a></li>
+                    <li><a href="services.html" class="nav-link">Services</a></li>
+                    <li><a href="portfolio.html" class="nav-link active">Portfolio</a></li>
+                    <li><a href="contact.html" class="nav-link">Contact</a></li>
+                </ul>
+                
+                <div class="nav-actions">
+                    <a href="contact.html" class="btn btn-primary btn-sm">Get Started</a>
+                    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Page Header -->
+        <section class="page-header">
+            <div class="container">
+                <h1 class="page-title">Our <span class="text-gradient">Portfolio</span></h1>
+                <p class="page-desc">Explore our recent projects and see how we've helped businesses achieve digital success.</p>
+                <nav class="breadcrumb">
+                    <a href="index.html">Home</a>
+                    <span>/</span>
+                    <span class="current">Portfolio</span>
+                </nav>
+            </div>
+        </section>
+
+        <!-- Portfolio Section -->
+        <section class="section">
+            <div class="container">
+                <!-- Filter Buttons -->
+                <div class="portfolio-filters">
+                    <button class="filter-btn active" data-filter="all">All Projects</button>
+                    <button class="filter-btn" data-filter="website">Websites</button>
+                    <button class="filter-btn" data-filter="app">Mobile Apps</button>
+                    <button class="filter-btn" data-filter="ecommerce">E-Commerce</button>
+                </div>
+
+                <!-- Portfolio Grid -->
+                <div class="portfolio-grid">
+                    <!-- Project 1 -->
+                    <article class="portfolio-item" data-category="website">
+                        <div class="portfolio-image">
+                            <div class="portfolio-placeholder" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                                <span>Restaurant Website</span>
+                            </div>
+                            <div class="portfolio-overlay">
+                                <div class="overlay-content">
+                                    <span class="portfolio-category">Website</span>
+                                    <h3>Spice Garden Restaurant</h3>
+                                    <p>Modern restaurant website with online menu, reservations, and ordering system.</p>
+                                    <div class="overlay-actions">
+                                        <a href="#" class="overlay-btn" title="View Details">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        </a>
+                                        <a href="#" class="overlay-btn" title="Visit Site">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Project 2 -->
+                    <article class="portfolio-item" data-category="app">
+                        <div class="portfolio-image">
+                            <div class="portfolio-placeholder" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                                    <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                                </svg>
+                                <span>Fitness App</span>
+                            </div>
+                            <div class="portfolio-overlay">
+                                <div class="overlay-content">
+                                    <span class="portfolio-category">Mobile App</span>
+                                    <h3>FitTrack Pro</h3>
+                                    <p>Health & fitness tracking app with workout plans, nutrition tracking, and progress analytics.</p>
+                                    <div class="overlay-actions">
+                                        <a href="#" class="overlay-btn" title="View Details">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        </a>
+                                        <a href="#" class="overlay-btn" title="Visit Site">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Project 3 -->
+                    <article class="portfolio-item" data-category="ecommerce">
+                        <div class="portfolio-image">
+                            <div class="portfolio-placeholder" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <circle cx="9" cy="21" r="1"></circle>
+                                    <circle cx="20" cy="21" r="1"></circle>
+                                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                                </svg>
+                                <span>Fashion Store</span>
+                            </div>
+                            <div class="portfolio-overlay">
+                                <div class="overlay-content">
+                                    <span class="portfolio-category">E-Commerce</span>
+                                    <h3>StyleBox Fashion</h3>
+                                    <p>Full-featured online fashion store with payment gateway and inventory management.</p>
+                                    <div class="overlay-actions">
+                                        <a href="#" class="overlay-btn" title="View Details">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        </a>
+                                        <a href="#" class="overlay-btn" title="Visit Site">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Project 4 -->
+                    <article class="portfolio-item" data-category="website">
+                        <div class="portfolio-image">
+                            <div class="portfolio-placeholder" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                                    <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                                </svg>
+                                <span>Education Portal</span>
+                            </div>
+                            <div class="portfolio-overlay">
+                                <div class="overlay-content">
+                                    <span class="portfolio-category">Website</span>
+                                    <h3>EduLearn Academy</h3>
+                                    <p>Learning management system with course enrollment, video streaming, and progress tracking.</p>
+                                    <div class="overlay-actions">
+                                        <a href="#" class="overlay-btn" title="View Details">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        </a>
+                                        <a href="#" class="overlay-btn" title="Visit Site">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Project 5 -->
+                    <article class="portfolio-item" data-category="app">
+                        <div class="portfolio-image">
+                            <div class="portfolio-placeholder" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                                    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                                    <line x1="6" y1="1" x2="6" y2="4"></line>
+                                    <line x1="10" y1="1" x2="10" y2="4"></line>
+                                    <line x1="14" y1="1" x2="14" y2="4"></line>
+                                </svg>
+                                <span>Food Delivery</span>
+                            </div>
+                            <div class="portfolio-overlay">
+                                <div class="overlay-content">
+                                    <span class="portfolio-category">Mobile App</span>
+                                    <h3>QuickBite Delivery</h3>
+                                    <p>Food ordering app with real-time tracking, multiple payment options, and restaurant listings.</p>
+                                    <div class="overlay-actions">
+                                        <a href="#" class="overlay-btn" title="View Details">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        </a>
+                                        <a href="#" class="overlay-btn" title="Visit Site">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Project 6 -->
+                    <article class="portfolio-item" data-category="ecommerce">
+                        <div class="portfolio-image">
+                            <div class="portfolio-placeholder" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                                </svg>
+                                <span>Electronics Store</span>
+                            </div>
+                            <div class="portfolio-overlay">
+                                <div class="overlay-content">
+                                    <span class="portfolio-category">E-Commerce</span>
+                                    <h3>TechMart Electronics</h3>
+                                    <p>Multi-vendor electronics marketplace with advanced filtering and comparison features.</p>
+                                    <div class="overlay-actions">
+                                        <a href="#" class="overlay-btn" title="View Details">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        </a>
+                                        <a href="#" class="overlay-btn" title="Visit Site">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- CTA -->
+                <div class="section-cta">
+                    <p style="margin-bottom: var(--space-4); color: var(--color-gray-600);">Have a project in mind?</p>
+                    <a href="contact.html" class="btn btn-primary btn-lg">Start Your Project</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-main">
+                <div class="footer-brand">
+                    <a href="index.html" class="footer-logo">
+                        <img src="logo.png" alt="Crevate Technologies" class="logo-img">
+                        <span>Crevate<span>Technologies</span></span>
+                    </a>
+                    <p class="footer-desc">Empowering businesses through innovative digital solutions.</p>
+                    <div class="footer-social">
+                        <a href="https://facebook.com/crevatetechnologies" aria-label="Facebook" target="_blank" rel="noopener">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                        </a>
+                        <a href="https://instagram.com/crevatetechnologies" aria-label="Instagram" target="_blank" rel="noopener">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                        </a>
+                        <a href="https://linkedin.com/company/crevate-technologies" aria-label="LinkedIn" target="_blank" rel="noopener">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                        </a>
+                        <a href="https://youtube.com/@crevatetechnologies" aria-label="YouTube" target="_blank" rel="noopener">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Quick Links</h4>
+                        <ul>
+                            <li><a href="index.html">Home</a></li>
+                            <li><a href="about.html">About Us</a></li>
+                            <li><a href="services.html">Services</a></li>
+                            <li><a href="portfolio.html">Portfolio</a></li>
+                            <li><a href="contact.html">Contact</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Services</h4>
+                        <ul>
+                            <li><a href="services.html#web-development">Web Development</a></li>
+                            <li><a href="services.html#mobile-apps">Mobile Apps</a></li>
+                            <li><a href="services.html#digital-marketing">Digital Marketing</a></li>
+                            <li><a href="services.html#ui-ux">UI/UX Design</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Contact</h4>
+                        <ul class="contact-list">
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                Lucknow, UP, India
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                <a href="tel:+916388110321">+91 6388110321</a>
+                            </li>
+                            <li>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                <a href="mailto:crevatetechnologies@gmail.com">crevatetechnologies@gmail.com</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2024 Crevate Technologies. All Rights Reserved.</p>
+                <div class="footer-bottom-links">
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Widget -->
+    <div class="whatsapp-widget" id="whatsappWidget">
+        <div class="wa-options" id="waOptions">
+            <a href="https://wa.me/916388110321?text=Hi! I'm interested in your services." target="_blank" class="wa-option">
+                <span class="wa-option-icon">💬</span>
+                <span>Chat with us</span>
+            </a>
+        </div>
+        <button class="wa-toggle" id="waToggle" aria-label="Chat on WhatsApp">
+            <svg class="wa-icon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            <svg class="wa-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+    </div>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+    </button>
+
+    <script src="main.js"></script>
+    <script src="components.js"></script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline | Crevate Technologies</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .offline-container {
+            text-align: center;
+            max-width: 480px;
+        }
+        
+        .offline-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .offline-icon svg {
+            width: 60px;
+            height: 60px;
+            stroke: #fff;
+            opacity: 0.9;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        
+        p {
+            font-size: 1rem;
+            opacity: 0.85;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .retry-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            background: #fff;
+            color: #1e3a5f;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .retry-btn:active {
+            transform: translateY(0);
+        }
+        
+        .contact-info {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .contact-info p {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .contact-info a {
+            color: #fff;
+            text-decoration: none;
+            opacity: 0.9;
+        }
+        
+        .contact-info a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+                <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+                <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+                <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+                <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                <line x1="12" y1="20" x2="12.01" y2="20"></line>
+            </svg>
+        </div>
+        
+        <h1>You're Offline</h1>
+        <p>It looks like you've lost your internet connection. Please check your network settings and try again.</p>
+        
+        <button class="retry-btn" onclick="window.location.reload()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            Try Again
+        </button>
+        
+        <div class="contact-info">
+            <p>Need immediate assistance?</p>
+            <p>
+                <a href="tel:+916388110321">📞 +91 6388110321</a>
+            </p>
+            <p>
+                <a href="mailto:crevatetechnologies@gmail.com">✉️ crevatetechnologies@gmail.com</a>
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Check connection status
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>
