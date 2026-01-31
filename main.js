@@ -1,7 +1,7 @@
 /**
  * ============================================
  * CREVATE TECHNOLOGIES - Main JavaScript
- * Version: 2.0.0
+ * Version: 2.1.0 (PWA Enhanced)
  * Clean, Modular, Production-Ready
  * ============================================
  */
@@ -14,8 +14,8 @@
        ========================================== */
     const CONFIG = {
         // Form submission APIs
-        web3formsKey: 'a869c4b9-2650-401b-90fa-6173b7c5ea83', // Get from web3forms.com
-        emailjsServiceId: 'YOUR_EMAILJS_SERVICE_ID', // Get from emailjs.com
+        web3formsKey: 'a869c4b9-2650-401b-90fa-6173b7c5ea83',
+        emailjsServiceId: 'YOUR_EMAILJS_SERVICE_ID',
         emailjsTemplateId: 'YOUR_EMAILJS_TEMPLATE_ID',
         emailjsPublicKey: 'YOUR_EMAILJS_PUBLIC_KEY',
         
@@ -26,14 +26,17 @@
         // UI Settings
         scrollOffset: 80,
         animationDuration: 300,
-        popupDelay: 20000, // 20 seconds
+        popupDelay: 20000,
         counterDuration: 2000,
         toastDuration: 5000,
+        welcomePopupDelay: 3000,
         
         // Storage keys
         storageKeys: {
             popupShown: 'crevate_popup_shown',
-            welcomeShown: 'crevate_welcome_shown'
+            welcomeShown: 'crevate_welcome_shown',
+            pwaInstallDismissed: 'crevate_pwa_dismissed',
+            pwaInstalled: 'crevate_pwa_installed'
         }
     };
 
@@ -41,9 +44,6 @@
        UTILITY FUNCTIONS
        ========================================== */
     const Utils = {
-        /**
-         * Debounce function
-         */
         debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -56,9 +56,6 @@
             };
         },
 
-        /**
-         * Throttle function
-         */
         throttle(func, limit) {
             let inThrottle;
             return function(...args) {
@@ -70,30 +67,18 @@
             };
         },
 
-        /**
-         * Check if element exists
-         */
         exists(selector) {
             return document.querySelector(selector) !== null;
         },
 
-        /**
-         * Safe querySelector
-         */
         $(selector) {
             return document.querySelector(selector);
         },
 
-        /**
-         * Safe querySelectorAll
-         */
         $$(selector) {
             return document.querySelectorAll(selector);
         },
 
-        /**
-         * Smooth scroll to element
-         */
         scrollTo(target, offset = CONFIG.scrollOffset) {
             const element = typeof target === 'string' ? document.querySelector(target) : target;
             if (element) {
@@ -106,9 +91,6 @@
             }
         },
 
-        /**
-         * Format date
-         */
         formatDate(date = new Date()) {
             return new Intl.DateTimeFormat('en-IN', {
                 dateStyle: 'medium',
@@ -117,16 +99,10 @@
             }).format(date);
         },
 
-        /**
-         * Generate unique ID
-         */
         generateId() {
             return 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         },
 
-        /**
-         * Get page info
-         */
         getPageInfo() {
             return {
                 url: window.location.href,
@@ -138,9 +114,6 @@
             };
         },
 
-        /**
-         * Session storage helpers
-         */
         session: {
             get(key) {
                 try {
@@ -158,9 +131,6 @@
             }
         },
 
-        /**
-         * Local storage helpers
-         */
         storage: {
             get(key) {
                 try {
@@ -184,6 +154,23 @@
                     console.warn('LocalStorage not available');
                 }
             }
+        },
+
+        // Check if running as PWA
+        isPWA() {
+            return window.matchMedia('(display-mode: standalone)').matches ||
+                   window.navigator.standalone === true ||
+                   document.referrer.includes('android-app://');
+        },
+
+        // Check if mobile device
+        isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        },
+
+        // Check if iOS
+        isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         }
     };
 
@@ -225,17 +212,14 @@
 
             this.container.appendChild(toast);
 
-            // Trigger animation
             requestAnimationFrame(() => {
                 toast.classList.add('show');
             });
 
-            // Close button
             toast.querySelector('.toast-close').addEventListener('click', () => {
                 this.hide(toast);
             });
 
-            // Auto hide
             setTimeout(() => this.hide(toast), duration);
 
             return toast;
@@ -246,20 +230,244 @@
             setTimeout(() => toast.remove(), 300);
         },
 
-        success(message) {
-            return this.show(message, 'success');
+        success(message) { return this.show(message, 'success'); },
+        error(message) { return this.show(message, 'error'); },
+        warning(message) { return this.show(message, 'warning'); },
+        info(message) { return this.show(message, 'info'); }
+    };
+
+    /* ==========================================
+       PWA INSTALLATION HANDLER
+       ========================================== */
+    const PWAInstall = {
+        deferredPrompt: null,
+        installButton: null,
+        installBanner: null,
+        isInstalled: false,
+
+        init() {
+            // Check if already installed
+            this.isInstalled = Utils.isPWA() || Utils.storage.get(CONFIG.storageKeys.pwaInstalled);
+            
+            if (this.isInstalled) {
+                console.log('📱 App is already installed as PWA');
+                return;
+            }
+
+            this.installButton = Utils.$('#pwaInstallBtn');
+            this.installBanner = Utils.$('#pwaInstallBanner');
+            
+            this.bindEvents();
+            this.registerServiceWorker();
         },
 
-        error(message) {
-            return this.show(message, 'error');
+        bindEvents() {
+            // Capture the install prompt
+            window.addEventListener('beforeinstallprompt', (e) => {
+                console.log('📲 beforeinstallprompt fired');
+                e.preventDefault();
+                this.deferredPrompt = e;
+                this.showInstallOption();
+            });
+
+            // Track successful installation
+            window.addEventListener('appinstalled', () => {
+                console.log('✅ PWA was installed successfully');
+                this.deferredPrompt = null;
+                this.isInstalled = true;
+                Utils.storage.set(CONFIG.storageKeys.pwaInstalled, true);
+                this.hideInstallOption();
+                Toast.success('App installed successfully! 🎉');
+            });
+
+            // Install button click
+            if (this.installButton) {
+                this.installButton.addEventListener('click', () => this.promptInstall());
+            }
+
+            // Banner install button
+            Utils.$('#bannerInstallBtn')?.addEventListener('click', () => this.promptInstall());
+            
+            // Banner close button
+            Utils.$('#bannerCloseBtn')?.addEventListener('click', () => this.dismissBanner());
+
+            // Track display mode changes
+            window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
+                if (e.matches) {
+                    this.isInstalled = true;
+                    Utils.storage.set(CONFIG.storageKeys.pwaInstalled, true);
+                }
+            });
         },
 
-        warning(message) {
-            return this.show(message, 'warning');
+        registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', async () => {
+                    try {
+                        const registration = await navigator.serviceWorker.register('/sw.js', {
+                            scope: '/'
+                        });
+                        
+                        console.log('✅ Service Worker registered:', registration.scope);
+
+                        // Check for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    this.showUpdateAvailable();
+                                }
+                            });
+                        });
+
+                    } catch (error) {
+                        console.error('❌ Service Worker registration failed:', error);
+                    }
+                });
+
+                // Handle controller change (new SW activated)
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    console.log('🔄 New Service Worker activated');
+                });
+            }
         },
 
-        info(message) {
-            return this.show(message, 'info');
+        showInstallOption() {
+            // Don't show if dismissed recently
+            const dismissed = Utils.storage.get(CONFIG.storageKeys.pwaInstallDismissed);
+            if (dismissed) {
+                const dismissedTime = new Date(dismissed).getTime();
+                const now = Date.now();
+                const daysSinceDismissed = (now - dismissedTime) / (1000 * 60 * 60 * 24);
+                
+                // Show again after 7 days
+                if (daysSinceDismissed < 7) {
+                    return;
+                }
+            }
+
+            // Show install button
+            if (this.installButton) {
+                this.installButton.classList.add('visible');
+            }
+
+            // Show install banner after delay
+            setTimeout(() => {
+                if (this.installBanner && !this.isInstalled) {
+                    this.installBanner.classList.add('visible');
+                }
+            }, 10000); // Show after 10 seconds
+
+            // For iOS, show manual instructions
+            if (Utils.isIOS()) {
+                this.showIOSInstructions();
+            }
+        },
+
+        hideInstallOption() {
+            if (this.installButton) {
+                this.installButton.classList.remove('visible');
+            }
+            if (this.installBanner) {
+                this.installBanner.classList.remove('visible');
+            }
+        },
+
+        async promptInstall() {
+            if (!this.deferredPrompt) {
+                // For iOS
+                if (Utils.isIOS()) {
+                    this.showIOSInstructions();
+                    return;
+                }
+                Toast.info('Install option not available');
+                return;
+            }
+
+            // Show the install prompt
+            this.deferredPrompt.prompt();
+
+            // Wait for user response
+            const { outcome } = await this.deferredPrompt.userChoice;
+            console.log(`📱 User ${outcome} the install prompt`);
+
+            if (outcome === 'accepted') {
+                Toast.success('Installing app...');
+            }
+
+            // Clear the prompt
+            this.deferredPrompt = null;
+            this.hideInstallOption();
+        },
+
+        dismissBanner() {
+            if (this.installBanner) {
+                this.installBanner.classList.remove('visible');
+            }
+            Utils.storage.set(CONFIG.storageKeys.pwaInstallDismissed, new Date().toISOString());
+        },
+
+        showIOSInstructions() {
+            const modal = document.createElement('div');
+            modal.className = 'ios-install-modal';
+            modal.innerHTML = `
+                <div class="ios-install-content">
+                    <button class="ios-install-close" aria-label="Close">×</button>
+                    <div class="ios-install-icon">📲</div>
+                    <h3>Install Crevate App</h3>
+                    <p>Install this app on your iPhone for quick access:</p>
+                    <ol>
+                        <li>Tap the <strong>Share</strong> button <span class="ios-share-icon">⬆️</span></li>
+                        <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+                        <li>Tap <strong>"Add"</strong> to confirm</li>
+                    </ol>
+                    <button class="btn btn-primary btn-block ios-got-it">Got it!</button>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            
+            requestAnimationFrame(() => modal.classList.add('active'));
+
+            const closeModal = () => {
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 300);
+            };
+
+            modal.querySelector('.ios-install-close').addEventListener('click', closeModal);
+            modal.querySelector('.ios-got-it').addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+        },
+
+        showUpdateAvailable() {
+            const updateToast = Toast.info('New version available! Click to update.');
+            updateToast.style.cursor = 'pointer';
+            updateToast.addEventListener('click', () => {
+                window.location.reload();
+            });
+        },
+
+        // Check online/offline status
+        initNetworkStatus() {
+            const updateOnlineStatus = () => {
+                if (navigator.onLine) {
+                    document.body.classList.remove('offline');
+                    Toast.success('You\'re back online!');
+                } else {
+                    document.body.classList.add('offline');
+                    Toast.warning('You\'re offline. Some features may be limited.');
+                }
+            };
+
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+
+            // Initial check
+            if (!navigator.onLine) {
+                document.body.classList.add('offline');
+            }
         }
     };
 
@@ -267,9 +475,6 @@
        FORM SUBMISSION SERVICE
        ========================================== */
     const FormService = {
-        /**
-         * Submit form data with fallback
-         */
         async submit(formData, formType = 'contact') {
             const leadId = Utils.generateId();
             const pageInfo = Utils.getPageInfo();
@@ -307,7 +512,7 @@
                 console.warn('EmailJS failed:', error);
             }
 
-            // Final fallback - save locally and notify via Telegram
+            // Final fallback
             try {
                 this.saveLeadLocally(payload);
                 await this.sendTelegramNotification(payload);
@@ -316,14 +521,10 @@
                 console.error('All submission methods failed:', error);
             }
 
-            // Save locally as last resort
             this.saveLeadLocally(payload);
             return { success: false, method: 'local_only', leadId };
         },
 
-        /**
-         * Submit to Web3Forms
-         */
         async submitToWeb3Forms(data) {
             const response = await fetch('https://api.web3forms.com/submit', {
                 method: 'POST',
@@ -348,11 +549,7 @@
             return result;
         },
 
-        /**
-         * Submit to EmailJS
-         */
         async submitToEmailJS(data) {
-            // Load EmailJS if not loaded
             if (!window.emailjs) {
                 await this.loadEmailJS();
             }
@@ -377,9 +574,6 @@
             return { success: true, result };
         },
 
-        /**
-         * Load EmailJS script dynamically
-         */
         loadEmailJS() {
             return new Promise((resolve, reject) => {
                 if (window.emailjs) {
@@ -398,9 +592,6 @@
             });
         },
 
-        /**
-         * Send Telegram notification
-         */
         async sendTelegramNotification(data) {
             if (!CONFIG.telegramBotToken || !CONFIG.telegramChatId) {
                 return { success: false, reason: 'Telegram not configured' };
@@ -438,9 +629,6 @@
             return response.json();
         },
 
-        /**
-         * Save lead locally (backup)
-         */
         saveLeadLocally(data) {
             const leads = Utils.storage.get('crevate_leads') || [];
             leads.push({
@@ -448,7 +636,6 @@
                 savedAt: new Date().toISOString()
             });
             
-            // Keep only last 50 leads locally
             if (leads.length > 50) {
                 leads.shift();
             }
@@ -457,16 +644,10 @@
             console.log('💾 Lead saved locally:', data.leadId);
         },
 
-        /**
-         * Get locally saved leads (for admin)
-         */
         getLocalLeads() {
             return Utils.storage.get('crevate_leads') || [];
         },
 
-        /**
-         * Export leads as CSV
-         */
         exportLeadsCSV() {
             const leads = this.getLocalLeads();
             if (leads.length === 0) {
@@ -507,7 +688,6 @@
         header: null,
         navToggle: null,
         navMenu: null,
-        navOverlay: null,
         isOpen: false,
         isScrolled: false,
 
@@ -515,7 +695,6 @@
             this.header = Utils.$('#header');
             this.navToggle = Utils.$('#navToggle');
             this.navMenu = Utils.$('#navMenu');
-            this.navOverlay = Utils.$('#navOverlay');
 
             if (!this.header) return;
 
@@ -524,10 +703,8 @@
         },
 
         bindEvents() {
-            // Scroll handler
             window.addEventListener('scroll', Utils.throttle(() => this.handleScroll(), 100));
 
-            // Toggle button
             if (this.navToggle) {
                 this.navToggle.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -535,24 +712,22 @@
                 });
             }
 
-            // Overlay click
-            if (this.navOverlay) {
-                this.navOverlay.addEventListener('click', () => this.close());
-            }
-
-            // Nav links
             Utils.$$('.nav-link').forEach(link => {
                 link.addEventListener('click', () => this.close());
             });
 
-            // Escape key
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && this.isOpen) {
                     this.close();
                 }
             });
 
-            // Resize handler
+            document.addEventListener('click', (e) => {
+                if (this.isOpen && !e.target.closest('.nav')) {
+                    this.close();
+                }
+            });
+
             window.addEventListener('resize', Utils.debounce(() => {
                 if (window.innerWidth > 991 && this.isOpen) {
                     this.close();
@@ -573,17 +748,12 @@
         },
 
         toggle() {
-            if (this.isOpen) {
-                this.close();
-            } else {
-                this.open();
-            }
+            this.isOpen ? this.close() : this.open();
         },
 
         open() {
             this.navToggle?.classList.add('active');
             this.navMenu?.classList.add('active');
-            this.navOverlay?.classList.add('active');
             document.body.classList.add('menu-open');
             this.isOpen = true;
         },
@@ -591,7 +761,6 @@
         close() {
             this.navToggle?.classList.remove('active');
             this.navMenu?.classList.remove('active');
-            this.navOverlay?.classList.remove('active');
             document.body.classList.remove('menu-open');
             this.isOpen = false;
         }
@@ -732,13 +901,8 @@
        ========================================== */
     const FormHandler = {
         init() {
-            // Contact form
             this.bindForm('#contactForm', 'contact');
-            
-            // Popup form
             this.bindForm('#popupForm', 'popup_consultation');
-            
-            // Welcome popup form
             this.bindForm('#welcomePopupForm', 'welcome_popup');
         },
 
@@ -756,17 +920,14 @@
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
 
-            // Validate
             if (!this.validate(form)) {
                 Toast.error('Please fill all required fields correctly');
                 return;
             }
 
-            // Show loading
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner"></span> Sending...';
 
-            // Collect data
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
 
@@ -802,7 +963,6 @@
                     isValid = false;
                 }
 
-                // Email validation
                 if (input.type === 'email' && input.value) {
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                     if (!emailRegex.test(input.value)) {
@@ -811,7 +971,6 @@
                     }
                 }
 
-                // Phone validation
                 if (input.type === 'tel' && input.value) {
                     const phoneRegex = /^[0-9+\-\s()]{10,15}$/;
                     if (!phoneRegex.test(input.value.replace(/\s/g, ''))) {
@@ -854,21 +1013,14 @@
         },
 
         bindEvents() {
-            // Close button
             Utils.$('#welcomePopupClose')?.addEventListener('click', () => this.close());
-            
-            // Skip button
             Utils.$('#welcomePopupSkip')?.addEventListener('click', () => this.close());
-            
-            // Success close
             Utils.$('#welcomeSuccessClose')?.addEventListener('click', () => this.close());
 
-            // Overlay click
             this.popup.addEventListener('click', (e) => {
                 if (e.target === this.popup) this.close();
             });
 
-            // Escape key
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && this.popup.classList.contains('active')) {
                     this.close();
@@ -877,26 +1029,24 @@
         },
 
         scheduleShow() {
-            // Check if already shown this session
             if (Utils.session.get(CONFIG.storageKeys.welcomeShown)) return;
 
             setTimeout(() => {
                 if (!this.isShown) this.show();
-            }, 3000); // Show after 3 seconds
+            }, CONFIG.welcomePopupDelay);
         },
 
         show() {
             this.popup.classList.add('active');
-            document.body.classList.add('menu-open');
+            document.body.classList.add('popup-open');
             this.isShown = true;
         },
 
         close() {
             this.popup.classList.remove('active');
-            document.body.classList.remove('menu-open');
+            document.body.classList.remove('popup-open');
             Utils.session.set(CONFIG.storageKeys.welcomeShown, 'true');
             
-            // Reset popup state after close
             setTimeout(() => {
                 const content = this.popup.querySelector('.welcome-popup-content');
                 const success = this.popup.querySelector('.welcome-popup-success');
@@ -907,7 +1057,7 @@
     };
 
     /* ==========================================
-       CONSULTATION POPUP
+       CONSULTATION POPUP (Free Quote)
        ========================================== */
     const ConsultPopup = {
         popup: null,
@@ -920,20 +1070,23 @@
         },
 
         bindEvents() {
-            // Free quote button trigger
+            // Free quote button trigger (left side button)
             Utils.$('#freeQuoteBtn')?.addEventListener('click', () => this.open());
+            
+            // Any element with data-open-popup attribute
+            Utils.$$('[data-open-popup="quote"]').forEach(el => {
+                el.addEventListener('click', () => this.open());
+            });
             
             // Close buttons
             Utils.$('#popupClose')?.addEventListener('click', () => this.close());
             Utils.$('#popupSkip')?.addEventListener('click', () => this.close());
             Utils.$('#popupSuccessClose')?.addEventListener('click', () => this.close());
 
-            // Overlay click
             this.popup.addEventListener('click', (e) => {
                 if (e.target === this.popup) this.close();
             });
 
-            // Escape key
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && this.popup.classList.contains('active')) {
                     this.close();
@@ -943,14 +1096,13 @@
 
         open() {
             this.popup.classList.add('active');
-            document.body.classList.add('menu-open');
+            document.body.classList.add('popup-open');
         },
 
         close() {
             this.popup.classList.remove('active');
-            document.body.classList.remove('menu-open');
+            document.body.classList.remove('popup-open');
             
-            // Reset popup state
             setTimeout(() => {
                 const content = this.popup.querySelector('.popup-content');
                 const success = this.popup.querySelector('.popup-success');
@@ -974,11 +1126,9 @@
                 btn.addEventListener('click', () => {
                     const filter = btn.getAttribute('data-filter');
                     
-                    // Update active button
                     filterBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     
-                    // Filter items
                     items.forEach(item => {
                         const category = item.getAttribute('data-category');
                         
@@ -1034,11 +1184,9 @@
             Utils.$('.slider-btn.prev')?.addEventListener('click', () => this.prev());
             Utils.$('.slider-btn.next')?.addEventListener('click', () => this.next());
 
-            // Pause on hover
             this.track.addEventListener('mouseenter', () => this.stopAutoplay());
             this.track.addEventListener('mouseleave', () => this.startAutoplay());
 
-            // Touch support
             let startX = 0;
             this.track.addEventListener('touchstart', (e) => {
                 startX = e.touches[0].clientX;
@@ -1084,59 +1232,6 @@
     };
 
     /* ==========================================
-       ACCORDION
-       ========================================== */
-    const Accordion = {
-        init() {
-            Utils.$$('.accordion-header').forEach(header => {
-                header.addEventListener('click', () => {
-                    const item = header.parentElement;
-                    const content = item.querySelector('.accordion-content');
-                    const isActive = item.classList.contains('active');
-
-                    // Close all
-                    Utils.$$('.accordion-item').forEach(i => {
-                        i.classList.remove('active');
-                        i.querySelector('.accordion-content').style.maxHeight = '0';
-                    });
-
-                    // Open clicked (if wasn't active)
-                    if (!isActive) {
-                        item.classList.add('active');
-                        content.style.maxHeight = content.scrollHeight + 'px';
-                    }
-                });
-            });
-        }
-    };
-
-    /* ==========================================
-       TABS
-       ========================================== */
-    const Tabs = {
-        init() {
-            Utils.$$('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const tabId = btn.getAttribute('data-tab');
-                    const tabContainer = btn.closest('.tabs');
-
-                    // Update buttons
-                    tabContainer.querySelectorAll('.tab-btn').forEach(b => {
-                        b.classList.remove('active');
-                    });
-                    btn.classList.add('active');
-
-                    // Update panels
-                    tabContainer.querySelectorAll('.tab-panel').forEach(panel => {
-                        panel.classList.remove('active');
-                    });
-                    tabContainer.querySelector(`#${tabId}`)?.classList.add('active');
-                });
-            });
-        }
-    };
-
-    /* ==========================================
        LAZY LOAD IMAGES
        ========================================== */
     const LazyLoad = {
@@ -1159,7 +1254,6 @@
 
                 images.forEach(img => observer.observe(img));
             } else {
-                // Fallback
                 images.forEach(img => {
                     img.src = img.getAttribute('data-src');
                     img.removeAttribute('data-src');
@@ -1169,11 +1263,10 @@
     };
 
     /* ==========================================
-       ADMIN CONSOLE (for viewing leads)
+       ADMIN CONSOLE
        ========================================== */
     const AdminConsole = {
         init() {
-            // Add keyboard shortcut: Ctrl + Shift + L
             document.addEventListener('keydown', (e) => {
                 if (e.ctrlKey && e.shiftKey && e.key === 'L') {
                     e.preventDefault();
@@ -1181,7 +1274,6 @@
                 }
             });
 
-            // Export shortcut: Ctrl + Shift + E
             document.addEventListener('keydown', (e) => {
                 if (e.ctrlKey && e.shiftKey && e.key === 'E') {
                     e.preventDefault();
@@ -1226,12 +1318,16 @@
         },
 
         bootstrap() {
-            // Core components
+            // Core
             Toast.init();
             Navigation.init();
             BackToTop.init();
             WhatsAppWidget.init();
             SmoothScroll.init();
+            
+            // PWA
+            PWAInstall.init();
+            PWAInstall.initNetworkStatus();
             
             // Features
             Counter.init();
@@ -1240,15 +1336,14 @@
             ConsultPopup.init();
             PortfolioFilter.init();
             OffersSlider.init();
-            Accordion.init();
-            Tabs.init();
             LazyLoad.init();
             
             // Admin
             AdminConsole.init();
 
-            // Log
+            // Logs
             console.log('✅ Crevate Technologies - All systems ready');
+            console.log('📱 PWA Status:', Utils.isPWA() ? 'Running as PWA' : 'Running in browser');
             console.log('💡 Press Ctrl+Shift+L to view local leads');
             console.log('💡 Press Ctrl+Shift+E to export leads as CSV');
         }
@@ -1261,7 +1356,8 @@
     window.CrevateApp = {
         FormService,
         Toast,
-        Utils
+        Utils,
+        PWAInstall
     };
 
 })();
