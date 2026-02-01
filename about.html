@@ -100,7 +100,7 @@
                     <li><a href="index.html" class="nav-link">Home</a></li>
                     <li><a href="about.html" class="nav-link active">About</a></li>
                     <li><a href="services.html" class="nav-link">Services</a></li>
-                    <li><a href="portfolio.html" class="nav-link">Portfolio</a></li>
+                   <!-- <li><a href="portfolio.html" class="nav-link">Portfolio</a></li> -->
                     <li><a href="contact.html" class="nav-link">Contact</a></li>
                 </ul>
                 
@@ -141,8 +141,8 @@
                            
                         </div>-->
                         <div class="experience-badge-large">
-                            <span class="exp-number-large">3+</span>
-                            <span class="exp-text-large">Years of Excellence</span>
+                            <span class="exp-number-large"></span>
+                            <span class="exp-text-large">Crevate Technologies building Digital Solutions</span>
                         </div>
                     </div>
                 
@@ -280,7 +280,7 @@
                             <li><a href="index.html">Home</a></li>
                             <li><a href="about.html">About Us</a></li>
                             <li><a href="services.html">Services</a></li>
-                            <li><a href="portfolio.html">Portfolio</a></li>
+                          <!--  <li><a href="portfolio.html">Portfolio</a></li>-->
                             <li><a href="contact.html">Contact</a></li>
                         </ul>
                     </div>
@@ -316,7 +316,7 @@
             </div>
             
             <div class="footer-bottom">
-                <p>© 2024 Crevate Technologies. All Rights Reserved.</p>
+                <p>© <span id="currentYear"></span> Crevate Technologies. All Rights Reserved.</p>
                 <div class="footer-bottom-links">
                     <a href="privacy.html">Privacy Policy</a>
                     <a href="terms.html">Terms of Service</a>
@@ -356,6 +356,13 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
     </button>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const yearSpan = document.getElementById('currentYear');
+            const currentYear = new Date().getFullYear();
+            yearSpan.textContent = currentYear;
+        }); 
+    </script>
     <script src="main.js"></script>
     <script src="components.js"></script>
     <script src="popup.js"></script>

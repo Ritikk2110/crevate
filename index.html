@@ -105,7 +105,7 @@
                     <li><a href="index.html" class="nav-link active">Home</a></li>
                     <li><a href="about.html" class="nav-link">About</a></li>
                     <li><a href="services.html" class="nav-link">Services</a></li>
-                    <li><a href="portfolio.html" class="nav-link">Portfolio</a></li>
+                <!--    <li><a href="portfolio.html" class="nav-link">Portfolio</a></li> -->
                     <li><a href="contact.html" class="nav-link">Contact</a></li>
                 </ul>
                 
@@ -133,20 +133,20 @@
                         <p class="hero-desc">From websites to mobile apps, we help startups and businesses establish a strong digital presence with affordable, quality solutions.</p>
                         <div class="hero-buttons">
                             <a href="contact.html" class="btn btn-primary">Free Consultation</a>
-                            <a href="portfolio.html" class="btn btn-outline">View Our Work</a>
+                            <a href="about.html" class="btn btn-outline">About us</a>
                         </div>
                         <div class="hero-stats">
                             <div class="stat">
-                                <span class="stat-number" data-count="50">0</span>+
-                                <span class="stat-label">Projects</span>
+                                <span class="stat-number" data-count="">0</span>+
+                                <span class="stat-label">Trusted</span>
                             </div>
                             <div class="stat">
-                                <span class="stat-number" data-count="40">0</span>+
-                                <span class="stat-label">Clients</span>
+                                <span class="stat-number" data-count="super"></span>+
+                                <span class="stat-label">Timely</span>
                             </div>
                             <div class="stat">
-                                <span class="stat-number" data-count="3">0</span>+
-                                <span class="stat-label">Years</span>
+                                <span class="stat-number" data-count="">0</span>+
+                                <span class="stat-label">Affordable</span>
                             </div>
                         </div>
                     </div>
@@ -499,7 +499,7 @@
                             <li><a href="index.html">Home</a></li>
                             <li><a href="about.html">About Us</a></li>
                             <li><a href="services.html">Services</a></li>
-                            <li><a href="portfolio.html">Portfolio</a></li>
+                           <!-- <li><a href="portfolio.html">Portfolio</a></li>-->
                             <li><a href="contact.html">Contact</a></li>
                         </ul>
                     </div>
@@ -536,7 +536,8 @@
             </div>
             
             <div class="footer-bottom">
-                <p>© 2024 Crevate Technologies. All Rights Reserved.</p>
+                <!-- auto change year -->
+                <p>© <span id="currentYear"></span> Crevate Technologies. All Rights Reserved.</p>
                 <div class="footer-bottom-links">
                     <a href="privacy.html">Privacy Policy</a>
                     <a href="terms.html">Terms of Service</a>
@@ -755,7 +756,14 @@
             </div>
         </div>
     </div>
-
+<!--script js  for auto change  copyright year -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const yearSpan = document.getElementById('currentYear');
+            const currentYear = new Date().getFullYear();
+            yearSpan.textContent = currentYear;
+        }); 
+    </script>
     <!-- Scripts -->
     <script src="main.js"></script>
     
