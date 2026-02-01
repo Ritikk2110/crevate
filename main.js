@@ -326,9 +326,16 @@
                 });
 
                 // Handle controller change (new SW activated)
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                    console.log('🔄 New Service Worker activated');
-                });
+               let refreshing = false;
+
+navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    console.log('🔄 New Service Worker activated — reloading');
+    window.location.reload();
+});
+
+
             }
         },
 
@@ -442,12 +449,17 @@
         },
 
         showUpdateAvailable() {
-            const updateToast = Toast.info('New version available! Click to update.');
-            updateToast.style.cursor = 'pointer';
-            updateToast.addEventListener('click', () => {
-                window.location.reload();
-            });
-        },
+    const updateToast = Toast.info('New version available! Tap to update.');
+    updateToast.style.cursor = 'pointer';
+
+    updateToast.addEventListener('click', async () => {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration?.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+    });
+},
+
 
         // Check online/offline status
         initNetworkStatus() {
@@ -1366,5 +1378,7 @@
             const yearSpan = document.getElementById('currentYear');
             const currentYear = new Date().getFullYear();
             yearSpan.textContent = currentYear;
-        }); 
+        });
+    
+
     
