@@ -1,137 +1,116 @@
-// sw.js - Service Worker v2.2.0
-const CACHE_VERSION = "v2.2.0";
+// sw.js - Service Worker with Auto-Update
+// ⚠️ ONLY CHANGE THIS VERSION WHEN DEPLOYING ⚠️
+const CACHE_VERSION = "2.2.1";
 const CACHE_NAME = `crevate-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline.html";
 
-// Static assets to pre-cache
-const STATIC_ASSETS = [
+// Assets to pre-cache (offline support)
+const PRECACHE_ASSETS = [
   "/offline.html",
-  "/css/style.css",
-  "/css/components.css",
-  "/css/responsive.css",
-  "/js/main.js",
-  "/js/components.js",
   "/logo.png",
   "/manifest.json"
 ];
 
 // ============================================
-// INSTALL - Cache static assets
+// INSTALL
 // ============================================
 self.addEventListener("install", (event) => {
-  console.log(`[SW] Installing ${CACHE_NAME}`);
+  console.log(`[SW ${CACHE_VERSION}] Installing...`);
   
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log("[SW] Pre-caching static assets");
-        return cache.addAll(STATIC_ASSETS);
-      })
-      .then(() => {
-        console.log("[SW] Skip waiting - activate immediately");
-        return self.skipWaiting();
-      })
+      .then((cache) => cache.addAll(PRECACHE_ASSETS))
+      .then(() => self.skipWaiting()) // Activate immediately
   );
 });
 
 // ============================================
-// ACTIVATE - Clean old caches & take control
+// ACTIVATE - Delete ALL old caches
 // ============================================
 self.addEventListener("activate", (event) => {
-  console.log(`[SW] Activating ${CACHE_NAME}`);
+  console.log(`[SW ${CACHE_VERSION}] Activating...`);
   
   event.waitUntil(
-    Promise.all([
-      // Delete all old caches
-      caches.keys().then((cacheNames) => {
+    caches.keys()
+      .then((cacheNames) => {
         return Promise.all(
-          cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME) {
-              console.log(`[SW] Deleting old cache: ${cacheName}`);
-              return caches.delete(cacheName);
-            }
-          })
+          cacheNames
+            .filter((name) => name !== CACHE_NAME)
+            .map((name) => {
+              console.log(`[SW] Deleting old cache: ${name}`);
+              return caches.delete(name);
+            })
         );
-      }),
-      // Take control of all clients immediately
-      self.clients.claim()
-    ]).then(() => {
-      // Notify all clients about the update
-      self.clients.matchAll().then((clients) => {
-        clients.forEach((client) => {
-          client.postMessage({
-            type: "SW_UPDATED",
-            version: CACHE_VERSION
+      })
+      .then(() => self.clients.claim()) // Take control immediately
+      .then(() => {
+        // Notify all tabs about the update
+        self.clients.matchAll().then((clients) => {
+          clients.forEach((client) => {
+            client.postMessage({ 
+              type: "CACHE_UPDATED", 
+              version: CACHE_VERSION 
+            });
           });
         });
-      });
-    })
+      })
   );
 });
 
 // ============================================
-// MESSAGE - Handle skip waiting request
+// MESSAGE HANDLER
 // ============================================
 self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
-    console.log("[SW] Received SKIP_WAITING message");
+  if (event.data?.type === "SKIP_WAITING") {
     self.skipWaiting();
-  }
-  
-  if (event.data && event.data.type === "GET_VERSION") {
-    event.ports[0].postMessage({ version: CACHE_VERSION });
   }
 });
 
 // ============================================
-// FETCH - Smart caching strategy
+// FETCH - Network First for Everything Important
 // ============================================
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
   
-  // Skip non-GET requests
+  // Skip non-GET and external requests
   if (request.method !== "GET") return;
-  
-  // Skip external requests
   if (url.origin !== location.origin) return;
   
-  // ----------------------------------------
-  // HTML Pages: NETWORK FIRST (Always fresh)
-  // ----------------------------------------
-  if (request.mode === "navigate" || request.destination === "document") {
+  // -----------------------------------------
+  // HTML Pages: ALWAYS Network First
+  // -----------------------------------------
+  if (request.mode === "navigate" || 
+      request.destination === "document" ||
+      url.pathname.endsWith(".html") ||
+      url.pathname === "/" ||
+      !url.pathname.includes(".")) {
+    
     event.respondWith(
-      fetch(request, {
-        cache: "no-store" // Bypass browser HTTP cache
-      })
-      .then((response) => {
-        // Cache the fresh HTML for offline use
-        const responseClone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(request, responseClone);
-        });
-        return response;
-      })
-      .catch(() => {
-        // Offline fallback
-        return caches.match(request)
-          .then((cached) => cached || caches.match(OFFLINE_URL));
-      })
+      fetch(request, { cache: "no-store" })
+        .then((response) => {
+          // Cache for offline
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => {
+          return caches.match(request)
+            .then((cached) => cached || caches.match(OFFLINE_URL));
+        })
     );
     return;
   }
   
-  // ----------------------------------------
-  // JS/CSS Files: NETWORK FIRST with Cache Fallback
-  // ----------------------------------------
+  // -----------------------------------------
+  // JS & CSS: Network First (Always Fresh)
+  // -----------------------------------------
   if (url.pathname.endsWith(".js") || url.pathname.endsWith(".css")) {
     event.respondWith(
       fetch(request, { cache: "no-store" })
         .then((response) => {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseClone);
-          });
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return response;
         })
         .catch(() => caches.match(request))
@@ -139,23 +118,20 @@ self.addEventListener("fetch", (event) => {
     return;
   }
   
-  // ----------------------------------------
-  // Images/Fonts: CACHE FIRST (Performance)
-  // ----------------------------------------
-  if (
-    request.destination === "image" ||
-    request.destination === "font" ||
-    url.pathname.match(/\.(png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|eot)$/)
-  ) {
+  // -----------------------------------------
+  // Images & Fonts: Cache First (Performance)
+  // -----------------------------------------
+  if (request.destination === "image" || 
+      request.destination === "font" ||
+      /\.(png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|eot)$/i.test(url.pathname)) {
+    
     event.respondWith(
       caches.match(request).then((cached) => {
         if (cached) return cached;
         
         return fetch(request).then((response) => {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseClone);
-          });
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return response;
         });
       })
@@ -163,16 +139,14 @@ self.addEventListener("fetch", (event) => {
     return;
   }
   
-  // ----------------------------------------
-  // Everything else: NETWORK FIRST
-  // ----------------------------------------
+  // -----------------------------------------
+  // Everything Else: Network First
+  // -----------------------------------------
   event.respondWith(
     fetch(request)
       .then((response) => {
-        const responseClone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(request, responseClone);
-        });
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         return response;
       })
       .catch(() => caches.match(request))

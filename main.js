@@ -240,311 +240,267 @@
        PWA INSTALLATION HANDLER
        ========================================== */
     /* ==========================================
-   PWA INSTALLATION HANDLER (FIXED)
+   PWA HANDLER - Auto Update Support
    ========================================== */
 const PWAInstall = {
     deferredPrompt: null,
     installButton: null,
     installBanner: null,
     isInstalled: false,
-    swRegistration: null,
-    currentVersion: null,
+    registration: null,
 
     init() {
         this.isInstalled = Utils.isPWA() || Utils.storage.get(CONFIG.storageKeys.pwaInstalled);
-        
-        if (this.isInstalled) {
-            console.log('📱 App is already installed as PWA');
-        }
-
         this.installButton = Utils.$('#pwaInstallBtn');
         this.installBanner = Utils.$('#pwaInstallBanner');
         
-        this.bindEvents();
         this.registerServiceWorker();
-        this.listenForSWMessages();
+        this.bindInstallEvents();
+        this.listenForUpdates();
     },
 
-    bindEvents() {
-        // Capture the install prompt
+    async registerServiceWorker() {
+        if (!('serviceWorker' in navigator)) return;
+
+        try {
+            this.registration = await navigator.serviceWorker.register('/sw.js', {
+                updateViaCache: 'none' // Important: bypass HTTP cache for SW
+            });
+            
+            console.log('✅ Service Worker registered');
+
+            // Check for updates on page load
+            this.registration.update();
+
+            // Check for updates every 30 minutes
+            setInterval(() => {
+                this.registration.update();
+            }, 30 * 60 * 1000);
+
+            // Handle new SW found
+            this.registration.addEventListener('updatefound', () => {
+                const newWorker = this.registration.installing;
+                
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        this.showUpdateBanner();
+                    }
+                });
+            });
+
+            // Auto-reload when new SW takes control
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                refreshing = true;
+                window.location.reload();
+            });
+
+        } catch (error) {
+            console.error('❌ SW registration failed:', error);
+        }
+    },
+
+    listenForUpdates() {
+        if (!('serviceWorker' in navigator)) return;
+
+        navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data?.type === 'CACHE_UPDATED') {
+                console.log('📢 Cache updated to version:', event.data.version);
+                // Page will auto-reload due to controllerchange event
+            }
+        });
+    },
+
+    showUpdateBanner() {
+        // Remove existing banner if any
+        Utils.$('#swUpdateBanner')?.remove();
+
+        const banner = document.createElement('div');
+        banner.id = 'swUpdateBanner';
+        banner.innerHTML = `
+            <div class="sw-update-banner">
+                <span>🔄 New version available!</span>
+                <button id="swUpdateBtn">Update Now</button>
+                <button id="swDismissBtn">×</button>
+            </div>
+        `;
+        document.body.appendChild(banner);
+
+        // Add styles inline for simplicity
+        banner.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 99999;
+            animation: slideUp 0.3s ease;
+        `;
+
+        const innerBanner = banner.querySelector('.sw-update-banner');
+        innerBanner.style.cssText = `
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            font-family: inherit;
+        `;
+
+        Utils.$('#swUpdateBtn').style.cssText = `
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        `;
+
+        Utils.$('#swDismissBtn').style.cssText = `
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 5px;
+        `;
+
+        // Update button
+        Utils.$('#swUpdateBtn').addEventListener('click', () => {
+            if (this.registration?.waiting) {
+                this.registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+        });
+
+        // Dismiss button
+        Utils.$('#swDismissBtn').addEventListener('click', () => {
+            banner.remove();
+        });
+    },
+
+    bindInstallEvents() {
         window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('📲 beforeinstallprompt fired');
             e.preventDefault();
             this.deferredPrompt = e;
             this.showInstallOption();
         });
 
-        // Track successful installation
         window.addEventListener('appinstalled', () => {
-            console.log('✅ PWA was installed successfully');
             this.deferredPrompt = null;
             this.isInstalled = true;
             Utils.storage.set(CONFIG.storageKeys.pwaInstalled, true);
             this.hideInstallOption();
-            Toast.success('App installed successfully! 🎉');
+            Toast.success('App installed! 🎉');
         });
 
-        // Install button click
-        if (this.installButton) {
-            this.installButton.addEventListener('click', () => this.promptInstall());
-        }
-
-        // Banner install button
+        this.installButton?.addEventListener('click', () => this.promptInstall());
         Utils.$('#bannerInstallBtn')?.addEventListener('click', () => this.promptInstall());
-        
-        // Banner close button
         Utils.$('#bannerCloseBtn')?.addEventListener('click', () => this.dismissBanner());
-
-        // Track display mode changes
-        window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
-            if (e.matches) {
-                this.isInstalled = true;
-                Utils.storage.set(CONFIG.storageKeys.pwaInstalled, true);
-            }
-        });
-    },
-
-    listenForSWMessages() {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.addEventListener('message', (event) => {
-                if (event.data && event.data.type === 'SW_UPDATED') {
-                    console.log('📢 SW updated to version:', event.data.version);
-                    this.showUpdateNotification();
-                }
-            });
-        }
-    },
-
-    async registerServiceWorker() {
-        if (!('serviceWorker' in navigator)) {
-            console.warn('Service Worker not supported');
-            return;
-        }
-
-        try {
-            // Unregister old service workers first (helps with stuck caches)
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            
-            this.swRegistration = await navigator.serviceWorker.register('/sw.js', {
-                scope: '/',
-                updateViaCache: 'none' // Don't use HTTP cache for SW
-            });
-            
-            console.log('✅ Service Worker registered:', this.swRegistration.scope);
-
-            // Check for updates immediately
-            this.swRegistration.update();
-
-            // Check for updates periodically (every 1 hour)
-            setInterval(() => {
-                this.swRegistration.update();
-                console.log('🔄 Checking for SW updates...');
-            }, 60 * 60 * 1000);
-
-            // Handle update found
-            this.swRegistration.addEventListener('updatefound', () => {
-                const newWorker = this.swRegistration.installing;
-                console.log('📦 New Service Worker installing...');
-
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed') {
-                        if (navigator.serviceWorker.controller) {
-                            // New update available
-                            console.log('🆕 New version available');
-                            this.showUpdateNotification();
-                        } else {
-                            // First install
-                            console.log('✅ Service Worker installed for first time');
-                        }
-                    }
-                });
-            });
-
-            // Handle controller change (new SW activated)
-            let refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (refreshing) return;
-                refreshing = true;
-                console.log('🔄 New Service Worker activated — reloading');
-                window.location.reload();
-            });
-
-        } catch (error) {
-            console.error('❌ Service Worker registration failed:', error);
-        }
-    },
-
-    showUpdateNotification() {
-        // Create update banner
-        const existingBanner = Utils.$('#updateBanner');
-        if (existingBanner) return; // Already showing
-
-        const banner = document.createElement('div');
-        banner.id = 'updateBanner';
-        banner.className = 'update-banner';
-        banner.innerHTML = `
-            <div class="update-banner-content">
-                <span class="update-icon">🔄</span>
-                <span class="update-text">A new version is available!</span>
-                <button class="update-btn" id="updateNowBtn">Update Now</button>
-                <button class="update-dismiss" id="updateDismissBtn">×</button>
-            </div>
-        `;
-        
-        document.body.appendChild(banner);
-        
-        // Show with animation
-        requestAnimationFrame(() => {
-            banner.classList.add('visible');
-        });
-
-        // Update button
-        Utils.$('#updateNowBtn')?.addEventListener('click', () => {
-            this.applyUpdate();
-        });
-
-        // Dismiss button
-        Utils.$('#updateDismissBtn')?.addEventListener('click', () => {
-            banner.classList.remove('visible');
-            setTimeout(() => banner.remove(), 300);
-        });
-    },
-
-    async applyUpdate() {
-        if (this.swRegistration && this.swRegistration.waiting) {
-            // Tell the waiting SW to skip waiting
-            this.swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
-        } else {
-            // Force reload with cache bypass
-            window.location.reload(true);
-        }
     },
 
     showInstallOption() {
         const dismissed = Utils.storage.get(CONFIG.storageKeys.pwaInstallDismissed);
         if (dismissed) {
-            const dismissedTime = new Date(dismissed).getTime();
-            const now = Date.now();
-            const daysSinceDismissed = (now - dismissedTime) / (1000 * 60 * 60 * 24);
-            
-            if (daysSinceDismissed < 7) {
-                return;
-            }
+            const days = (Date.now() - new Date(dismissed).getTime()) / (1000 * 60 * 60 * 24);
+            if (days < 7) return;
         }
 
-        if (this.installButton) {
-            this.installButton.classList.add('visible');
-        }
-
+        this.installButton?.classList.add('visible');
+        
         setTimeout(() => {
             if (this.installBanner && !this.isInstalled) {
                 this.installBanner.classList.add('visible');
             }
         }, 10000);
 
-        if (Utils.isIOS()) {
-            this.showIOSInstructions();
-        }
+        if (Utils.isIOS()) this.showIOSInstructions();
     },
 
     hideInstallOption() {
-        if (this.installButton) {
-            this.installButton.classList.remove('visible');
-        }
-        if (this.installBanner) {
-            this.installBanner.classList.remove('visible');
-        }
+        this.installButton?.classList.remove('visible');
+        this.installBanner?.classList.remove('visible');
     },
 
     async promptInstall() {
         if (!this.deferredPrompt) {
             if (Utils.isIOS()) {
                 this.showIOSInstructions();
-                return;
+            } else {
+                Toast.info('Install option not available');
             }
-            Toast.info('Install option not available');
             return;
         }
 
         this.deferredPrompt.prompt();
         const { outcome } = await this.deferredPrompt.userChoice;
-        console.log(`📱 User ${outcome} the install prompt`);
-
+        
         if (outcome === 'accepted') {
-            Toast.success('Installing app...');
+            Toast.success('Installing...');
         }
-
+        
         this.deferredPrompt = null;
         this.hideInstallOption();
     },
 
     dismissBanner() {
-        if (this.installBanner) {
-            this.installBanner.classList.remove('visible');
-        }
+        this.installBanner?.classList.remove('visible');
         Utils.storage.set(CONFIG.storageKeys.pwaInstallDismissed, new Date().toISOString());
     },
 
     showIOSInstructions() {
+        // Your existing iOS instructions code
         const modal = document.createElement('div');
         modal.className = 'ios-install-modal';
         modal.innerHTML = `
             <div class="ios-install-content">
-                <button class="ios-install-close" aria-label="Close">×</button>
+                <button class="ios-install-close">×</button>
                 <div class="ios-install-icon">📲</div>
                 <h3>Install Crevate App</h3>
-                <p>Install this app on your iPhone for quick access:</p>
+                <p>Install on your iPhone:</p>
                 <ol>
-                    <li>Tap the <strong>Share</strong> button <span class="ios-share-icon">⬆️</span></li>
-                    <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
-                    <li>Tap <strong>"Add"</strong> to confirm</li>
+                    <li>Tap <strong>Share</strong> ⬆️</li>
+                    <li>Tap <strong>"Add to Home Screen"</strong></li>
+                    <li>Tap <strong>"Add"</strong></li>
                 </ol>
-                <button class="btn btn-primary btn-block ios-got-it">Got it!</button>
+                <button class="btn btn-primary ios-got-it">Got it!</button>
             </div>
         `;
-
         document.body.appendChild(modal);
         requestAnimationFrame(() => modal.classList.add('active'));
 
-        const closeModal = () => {
+        const close = () => {
             modal.classList.remove('active');
             setTimeout(() => modal.remove(), 300);
         };
 
-        modal.querySelector('.ios-install-close').addEventListener('click', closeModal);
-        modal.querySelector('.ios-got-it').addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
+        modal.querySelector('.ios-install-close').onclick = close;
+        modal.querySelector('.ios-got-it').onclick = close;
+        modal.onclick = (e) => { if (e.target === modal) close(); };
     },
 
-    // Check online/offline status
     initNetworkStatus() {
-        const updateOnlineStatus = () => {
+        const update = () => {
             if (navigator.onLine) {
                 document.body.classList.remove('offline');
-                // Only show toast if was offline
                 if (document.body.dataset.wasOffline === 'true') {
-                    Toast.success('You\'re back online!');
-                    // Check for updates when coming back online
-                    if (this.swRegistration) {
-                        this.swRegistration.update();
-                    }
+                    Toast.success('Back online!');
+                    this.registration?.update();
                 }
                 document.body.dataset.wasOffline = 'false';
             } else {
                 document.body.classList.add('offline');
                 document.body.dataset.wasOffline = 'true';
-                Toast.warning('You\'re offline. Some features may be limited.');
+                Toast.warning('You\'re offline');
             }
         };
 
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
-
-        if (!navigator.onLine) {
-            document.body.classList.add('offline');
-        }
+        window.addEventListener('online', update);
+        window.addEventListener('offline', update);
+        if (!navigator.onLine) document.body.classList.add('offline');
     }
 };
     /* ==========================================

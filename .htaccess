@@ -1,16 +1,21 @@
-# .htaccess - Force no-cache for HTML files
-<FilesMatch "\.(html|htm)$">
+# Prevent caching of Service Worker
+<Files "sw.js">
     Header set Cache-Control "no-cache, no-store, must-revalidate"
     Header set Pragma "no-cache"
     Header set Expires "0"
+</Files>
+
+# Prevent caching of HTML
+<FilesMatch "\.(html|htm)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
 </FilesMatch>
 
-# Cache-bust JS and CSS (shorter cache)
+# Short cache for JS/CSS (1 hour)
 <FilesMatch "\.(js|css)$">
     Header set Cache-Control "public, max-age=3600, must-revalidate"
 </FilesMatch>
 
-# Long cache for images
+# Long cache for images (1 year)
 <FilesMatch "\.(ico|jpg|jpeg|png|gif|svg|webp|woff|woff2)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
 </FilesMatch>
