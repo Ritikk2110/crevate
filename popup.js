@@ -26,7 +26,7 @@
         },
         
         // WhatsApp number (with country code, no + or spaces)
-        whatsappNumber: '916388110321',
+        whatsappNumber: '917839333200',
         
         // Company email for fallback
         companyEmail: 'crevatetechnologies@gmail.com'
